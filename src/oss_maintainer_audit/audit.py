@@ -1,0 +1,66 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Iterable
+
+
+@dataclass(frozen=True)
+class CheckResult:
+    name: str
+    passed: bool
+    message: str
+    weight: int = 1
+
+
+@dataclass(frozen=True)
+class AuditResult:
+    root: Path
+    checks: tuple[CheckResult, ...]
+
+    @property
+    def passed(self) -> int:
+        return sum(check.weight for check in self.checks if check.passed)
+
+    @property
+    def total(self) -> int:
+        return sum(check.weight for check in self.checks)
+
+    @property
+    def score_percent(self) -> int:
+        if self.total == 0:
+            return 0
+        return round((self.passed / self.total) * 100)
+
+
+def audit_repository(root: Path | str) -> AuditResult:
+    repo_root = Path(root).expanduser().resolve()
+    if not repo_root.exists():
+        raise FileNotFoundError(f"Repository path does not exist: {repo_root}")
+    if not repo_root.is_dir():
+        raise NotADirectoryError(f"Repository path is not a directory: {repo_root}")
+
+    checks = (
+        _check_any_file(repo_root, "README", ("README.md", "README.rst", "README.txt")),
+        _check_any_file(repo_root, "License", ("LICENSE", "LICENSE.md", "COPYING")),
+        _check_any_file(repo_root, "Contributing guide", ("CONTRIBUTING.md", ".github/CONTRIBUTING.md")),
+        _check_any_file(repo_root, "Code of conduct", ("CODE_OF_CONDUCT.md", ".github/CODE_OF_CONDUCT.md")),
+        _check_any_file(repo_root, "Security policy", ("SECURITY.md", ".github/SECURITY.md")),
+        _check_any_file(repo_root, "Issue templates", (".github/ISSUE_TEMPLATE", ".github/ISSUE_TEMPLATE.md")),
+        _check_any_file(repo_root, "Pull request template", (".github/PULL_REQUEST_TEMPLATE.md",)),
+        _check_any_file(repo_root, "CI workflow", (".github/workflows",)),
+        _check_any_file(repo_root, "Changelog", ("CHANGELOG.md", "HISTORY.md", "RELEASES.md")),
+        _check_any_file(repo_root, "Package metadata", ("pyproject.toml", "package.json", "Cargo.toml", "go.mod")),
+    )
+
+    return AuditResult(root=repo_root, checks=checks)
+
+
+def _check_any_file(root: Path, name: str, candidates: Iterable[str]) -> CheckResult:
+    for candidate in candidates:
+        candidate_path = root / candidate
+        if candidate_path.exists():
+            return CheckResult(name=name, passed=True, message=f"{candidate} found")
+
+    candidate_list = ", ".join(candidates)
+    return CheckResult(name=name, passed=False, message=f"Add one of: {candidate_list}")
