@@ -16,7 +16,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("path", nargs="?", default=".", help="Repository path to audit")
     parser.add_argument(
         "--format",
-        choices=("text", "json"),
+        choices=("text", "json", "markdown"),
         default="text",
         help="Output format",
     )
@@ -31,6 +31,8 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.format == "json":
         print(_to_json(result))
+    elif args.format == "markdown":
+        print(_to_markdown(result))
     else:
         print(_to_text(result))
 
@@ -71,6 +73,25 @@ def _to_json(result: AuditResult) -> str:
         ],
     }
     return json.dumps(payload, indent=2)
+
+
+def _to_markdown(result: AuditResult) -> str:
+    lines = [
+        "# OSS Maintainer Audit",
+        "",
+        f"Repository: `{result.root}`",
+        "",
+        f"Score: **{result.passed}/{result.total} ({result.score_percent}%)**",
+        "",
+        "| Status | Check | Detail |",
+        "| --- | --- | --- |",
+    ]
+
+    for check in result.checks:
+        status = "PASS" if check.passed else "WARN"
+        lines.append(f"| {status} | {check.name} | {check.message} |")
+
+    return "\n".join(lines)
 
 
 if __name__ == "__main__":

@@ -25,3 +25,15 @@ def test_cli_returns_success_for_healthy_repo(tmp_path: Path, capsys) -> None:
 
     assert exit_code == 0
     assert "Score: 10/10" in capsys.readouterr().out
+
+
+def test_cli_can_output_markdown_report(tmp_path: Path, capsys) -> None:
+    (tmp_path / "README.md").write_text("# Project\n", encoding="utf-8")
+
+    exit_code = main([str(tmp_path), "--format", "markdown"])
+
+    assert exit_code == 1
+    output = capsys.readouterr().out
+    assert "# OSS Maintainer Audit" in output
+    assert "| Status | Check | Detail |" in output
+    assert "| PASS | README | README.md found |" in output

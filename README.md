@@ -47,6 +47,12 @@ Show JSON output:
 oss-maintainer-audit /path/to/project --format json
 ```
 
+Generate a Markdown report:
+
+```bash
+oss-maintainer-audit /path/to/project --format markdown
+```
+
 ## Example
 
 ```text
@@ -66,7 +72,6 @@ Maintainers often carry invisible work: review, triage, release management, user
 ## Roadmap
 
 - GitHub URL auditing through the public API
-- Markdown report generation
 - Suggested fixes for missing files
 - Configurable checks
 - Score history for release readiness
