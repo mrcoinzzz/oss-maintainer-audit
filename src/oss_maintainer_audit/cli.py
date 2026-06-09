@@ -20,6 +20,7 @@ def main(argv: list[str] | None = None) -> int:
         default="text",
         help="Output format",
     )
+    parser.add_argument("--min-score", type=int, default=70, help="Minimum passing score percentage")
 
     args = parser.parse_args(argv)
 
@@ -32,18 +33,19 @@ def main(argv: list[str] | None = None) -> int:
     if args.format == "json":
         print(_to_json(result))
     elif args.format == "markdown":
-        print(_to_markdown(result))
+        print(_to_markdown(result, args.min_score))
     else:
-        print(_to_text(result))
+        print(_to_text(result, args.min_score))
 
-    return 0 if result.score_percent >= 70 else 1
+    return 0 if result.score_percent >= args.min_score else 1
 
 
-def _to_text(result: AuditResult) -> str:
+def _to_text(result: AuditResult, min_score: int) -> str:
     lines = [
         f"OSS Maintainer Audit: {result.root}",
         "",
         f"Score: {result.passed}/{result.total} ({result.score_percent}%)",
+        f"Required: {min_score}%",
         "",
     ]
 
@@ -75,13 +77,14 @@ def _to_json(result: AuditResult) -> str:
     return json.dumps(payload, indent=2)
 
 
-def _to_markdown(result: AuditResult) -> str:
+def _to_markdown(result: AuditResult, min_score: int) -> str:
     lines = [
         "# OSS Maintainer Audit",
         "",
         f"Repository: `{result.root}`",
         "",
         f"Score: **{result.passed}/{result.total} ({result.score_percent}%)**",
+        f"Required: **{min_score}%**",
         "",
         "| Status | Check | Detail |",
         "| --- | --- | --- |",

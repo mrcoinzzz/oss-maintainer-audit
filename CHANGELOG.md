@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added `--min-score` for configurable pass/fail thresholds
 - Added Markdown report output with `--format markdown`
 
 ## 0.1.0
