@@ -46,3 +46,16 @@ def test_cli_respects_custom_min_score(tmp_path: Path, capsys) -> None:
 
     assert exit_code == 0
     assert "Required: 10%" in capsys.readouterr().out
+
+
+def test_cli_can_write_report_to_file(tmp_path: Path, capsys) -> None:
+    (tmp_path / "README.md").write_text("# Project\n", encoding="utf-8")
+    output_path = tmp_path / "reports" / "audit.md"
+
+    exit_code = main([str(tmp_path), "--format", "markdown", "--output", str(output_path)])
+
+    assert exit_code == 1
+    assert capsys.readouterr().out == ""
+    output = output_path.read_text(encoding="utf-8")
+    assert "# OSS Maintainer Audit" in output
+    assert "| PASS | README | README.md found |" in output

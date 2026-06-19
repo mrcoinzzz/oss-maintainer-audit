@@ -21,6 +21,7 @@ def main(argv: list[str] | None = None) -> int:
         help="Output format",
     )
     parser.add_argument("--min-score", type=int, default=70, help="Minimum passing score percentage")
+    parser.add_argument("--output", help="Write the audit report to a file")
 
     args = parser.parse_args(argv)
 
@@ -31,11 +32,22 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     if args.format == "json":
-        print(_to_json(result))
+        output = _to_json(result)
     elif args.format == "markdown":
-        print(_to_markdown(result, args.min_score))
+        output = _to_markdown(result, args.min_score)
     else:
-        print(_to_text(result, args.min_score))
+        output = _to_text(result, args.min_score)
+
+    if args.output:
+        try:
+            output_path = Path(args.output)
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_text(output + "\n", encoding="utf-8")
+        except OSError as error:
+            print(f"Could not write audit report: {error}", file=sys.stderr)
+            return 2
+    else:
+        print(output)
 
     return 0 if result.score_percent >= args.min_score else 1
 

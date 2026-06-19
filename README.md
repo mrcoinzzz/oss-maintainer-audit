@@ -53,6 +53,12 @@ Generate a Markdown report:
 oss-maintainer-audit /path/to/project --format markdown
 ```
 
+Write a report to a file:
+
+```bash
+oss-maintainer-audit /path/to/project --format markdown --output audit-report.md
+```
+
 Use a custom CI threshold:
 
 ```bash

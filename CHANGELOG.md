@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added `--output` for writing audit reports to files
 - Added a GitHub Actions maintainer audit report workflow
 - Added `--min-score` for configurable pass/fail thresholds
 - Added Markdown report output with `--format markdown`
