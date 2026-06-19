@@ -59,6 +59,8 @@ Use a custom CI threshold:
 oss-maintainer-audit /path/to/project --min-score 80
 ```
 
+This repository includes an example workflow at `.github/workflows/audit-report.yml` that writes a Markdown maintainer audit report to the GitHub Actions step summary.
+
 ## Example
 
 ```text
