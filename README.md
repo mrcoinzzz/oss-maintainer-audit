@@ -65,6 +65,12 @@ Use a custom CI threshold:
 oss-maintainer-audit /path/to/project --min-score 80
 ```
 
+Show only missing maintainer signals:
+
+```bash
+oss-maintainer-audit /path/to/project --failures-only
+```
+
 This repository includes an example workflow at `.github/workflows/audit-report.yml` that writes a Markdown maintainer audit report to the GitHub Actions step summary.
 
 ## Example
