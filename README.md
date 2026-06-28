@@ -71,6 +71,12 @@ Show only missing maintainer signals:
 oss-maintainer-audit /path/to/project --failures-only
 ```
 
+Write audit metrics for a GitHub Actions step:
+
+```bash
+oss-maintainer-audit /path/to/project --github-output "$GITHUB_OUTPUT"
+```
+
 This repository includes an example workflow at `.github/workflows/audit-report.yml` that writes a Markdown maintainer audit report to the GitHub Actions step summary.
 
 ## Example

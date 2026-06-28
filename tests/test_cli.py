@@ -94,3 +94,19 @@ def test_cli_failures_only_marks_all_passed_for_healthy_repo(tmp_path: Path, cap
 
     assert exit_code == 0
     assert "All checks passed." in capsys.readouterr().out
+
+
+def test_cli_can_write_github_actions_output(tmp_path: Path, capsys) -> None:
+    (tmp_path / "README.md").write_text("# Project\n", encoding="utf-8")
+    output_path = tmp_path / "github-output.txt"
+
+    exit_code = main([str(tmp_path), "--github-output", str(output_path), "--failures-only"])
+
+    assert exit_code == 1
+    assert "WARN  License" in capsys.readouterr().out
+    output = output_path.read_text(encoding="utf-8")
+    assert "passed=1" in output
+    assert "total=10" in output
+    assert "percent=10" in output
+    assert "failing_count=9" in output
+    assert "failing_checks=License,Contributing guide" in output

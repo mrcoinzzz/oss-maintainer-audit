@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added `--github-output` for GitHub Actions-compatible audit metrics
 - Added `--failures-only` for concise reports that show only missing checks
 - Added `--output` for writing audit reports to files
 - Added a GitHub Actions maintainer audit report workflow

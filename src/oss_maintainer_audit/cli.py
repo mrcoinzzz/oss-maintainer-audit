@@ -22,6 +22,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--min-score", type=int, default=70, help="Minimum passing score percentage")
     parser.add_argument("--output", help="Write the audit report to a file")
+    parser.add_argument("--github-output", help="Write audit metrics to a GitHub Actions output file")
     parser.add_argument("--failures-only", action="store_true", help="Only include failing checks in the report output")
 
     args = parser.parse_args(argv)
@@ -31,6 +32,13 @@ def main(argv: list[str] | None = None) -> int:
     except (FileNotFoundError, NotADirectoryError) as error:
         print(str(error), file=sys.stderr)
         return 2
+
+    if args.github_output:
+        try:
+            _write_github_output(Path(args.github_output), result)
+        except OSError as error:
+            print(f"Could not write GitHub output: {error}", file=sys.stderr)
+            return 2
 
     if args.format == "json":
         output = _to_json(result, args.failures_only)
@@ -123,6 +131,19 @@ def _report_checks(result: AuditResult, failures_only: bool) -> tuple[CheckResul
     if not failures_only:
         return result.checks
     return tuple(check for check in result.checks if not check.passed)
+
+
+def _write_github_output(path: Path, result: AuditResult) -> None:
+    failing = tuple(check for check in result.checks if not check.passed)
+    lines = [
+        f"passed={result.passed}",
+        f"total={result.total}",
+        f"percent={result.score_percent}",
+        f"failing_count={len(failing)}",
+        f"failing_checks={','.join(check.name for check in failing)}",
+    ]
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":
