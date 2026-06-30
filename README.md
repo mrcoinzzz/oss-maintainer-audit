@@ -71,6 +71,24 @@ Show only missing maintainer signals:
 oss-maintainer-audit /path/to/project --failures-only
 ```
 
+Use a config file:
+
+```bash
+oss-maintainer-audit /path/to/project --config .oss-maintainer-audit.json
+```
+
+Example `.oss-maintainer-audit.json`:
+
+```json
+{
+  "min_score": 80,
+  "disabled_checks": ["Code of conduct"],
+  "required_files": {
+    "README": ["docs/overview.md"]
+  }
+}
+```
+
 Write audit metrics for a GitHub Actions step:
 
 ```bash
@@ -99,7 +117,6 @@ Maintainers often carry invisible work: review, triage, release management, user
 
 - GitHub URL auditing through the public API
 - Suggested fixes for missing files
-- Configurable checks
 - Score history for release readiness
 
 ## License

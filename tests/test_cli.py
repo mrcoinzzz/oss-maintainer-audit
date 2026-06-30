@@ -110,3 +110,23 @@ def test_cli_can_write_github_actions_output(tmp_path: Path, capsys) -> None:
     assert "percent=10" in output
     assert "failing_count=9" in output
     assert "failing_checks=License,Contributing guide" in output
+
+
+def test_cli_uses_config_file(tmp_path: Path, capsys) -> None:
+    (tmp_path / "README.md").write_text("# Project\n", encoding="utf-8")
+    (tmp_path / ".oss-maintainer-audit.json").write_text(
+        """
+        {
+          "min_score": 10,
+          "disabled_checks": ["License"]
+        }
+        """,
+        encoding="utf-8",
+    )
+
+    exit_code = main([str(tmp_path), "--failures-only"])
+
+    assert exit_code == 0
+    output = capsys.readouterr().out
+    assert "Required: 10%" in output
+    assert "WARN  License" not in output

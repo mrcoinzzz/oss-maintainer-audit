@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 from .audit import AuditResult, CheckResult, audit_repository
+from .config import load_config
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -20,18 +21,27 @@ def main(argv: list[str] | None = None) -> int:
         default="text",
         help="Output format",
     )
-    parser.add_argument("--min-score", type=int, default=70, help="Minimum passing score percentage")
+    parser.add_argument("--min-score", type=int, help="Minimum passing score percentage")
     parser.add_argument("--output", help="Write the audit report to a file")
     parser.add_argument("--github-output", help="Write audit metrics to a GitHub Actions output file")
     parser.add_argument("--failures-only", action="store_true", help="Only include failing checks in the report output")
+    parser.add_argument("--config", help="Path to an audit config file")
 
     args = parser.parse_args(argv)
+    repo_path = Path(args.path)
 
     try:
-        result = audit_repository(Path(args.path))
-    except (FileNotFoundError, NotADirectoryError) as error:
+        config = load_config(repo_path.expanduser().resolve(), args.config)
+        result = audit_repository(
+            repo_path,
+            disabled_checks=config.disabled_checks,
+            required_files=config.required_files,
+        )
+    except (FileNotFoundError, NotADirectoryError, ValueError) as error:
         print(str(error), file=sys.stderr)
         return 2
+
+    min_score = args.min_score if args.min_score is not None else config.min_score or 70
 
     if args.github_output:
         try:
@@ -43,9 +53,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.format == "json":
         output = _to_json(result, args.failures_only)
     elif args.format == "markdown":
-        output = _to_markdown(result, args.min_score, args.failures_only)
+        output = _to_markdown(result, min_score, args.failures_only)
     else:
-        output = _to_text(result, args.min_score, args.failures_only)
+        output = _to_text(result, min_score, args.failures_only)
 
     if args.output:
         try:
@@ -58,7 +68,7 @@ def main(argv: list[str] | None = None) -> int:
     else:
         print(output)
 
-    return 0 if result.score_percent >= args.min_score else 1
+    return 0 if result.score_percent >= min_score else 1
 
 
 def _to_text(result: AuditResult, min_score: int, failures_only: bool = False) -> str:

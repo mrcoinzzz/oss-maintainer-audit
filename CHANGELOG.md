@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added `.oss-maintainer-audit.json` config support for thresholds, disabled checks, and required file overrides
 - Added `--github-output` for GitHub Actions-compatible audit metrics
 - Added `--failures-only` for concise reports that show only missing checks
 - Added `--output` for writing audit reports to files
